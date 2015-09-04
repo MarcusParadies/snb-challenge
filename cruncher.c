@@ -39,6 +39,8 @@ FILE *person_bdays_out;
 FILE *csr_offset_out;
 FILE *csr_out;
 
+FILE *outfile;
+
 void parse_csv(char* fname, void (*line_handler)(unsigned char nfields, char** fieldvals)) {
 	long nlines = 0;
 
@@ -271,7 +273,7 @@ void query(unsigned short qid, unsigned short artist, unsigned short areltd[], u
     }
     
     for (const auto& e : vec) {
-        cout << e.person_id << " " << e.friend_id << " " << e.score << endl;
+        fprintf(outfile, "%d|%d|%lu|%lu\n", qid, e.score, e.person_id, e.friend_id);
     }
 }
 
@@ -311,6 +313,12 @@ int main(int argc, char *argv[]) {
     
     interests_map   = (uint16_t *) mmapr(makepath(argv[1], "interests", "bin"), &interests_length);
     interests_offset_map = (uint32_t *) mmapr(makepath(argv[1], "interests_offsets", "bin"), &interests_offset_length);
+    
+    outfile = fopen(argv[3], "w");  
+    if (outfile == NULL) {
+        fprintf(stderr, "Can't write to output file at %s\n", argv[3]);
+        exit(-1);
+    }
     
     parse_csv(argv[2], &query_line_handler);
     
